@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReAnime + 카이란 블로그 실시간 자막 오버레이 테스트</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0b0f19;
+      color: #f1f5f9;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 16px 60px;
+    }
+    .header {
+      text-align: center;
+      max-width: 800px;
+      margin-bottom: 20px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      border-radius: 9999px;
+      color: #c084fc;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #a855f7;
+      box-shadow: 0 0 10px #a855f7;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    p.subtitle {
+      font-size: 13.5px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* Subtitle Control Toolbar */
+    .sub-toolbar {
+      width: 100%;
+      max-width: 1060px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 12px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .sub-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .blog-tag {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 11px;
+    }
+    .time-monitor {
+      font-family: monospace;
+      color: #38bdf8;
+      background: rgba(15, 23, 42, 0.9);
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      font-size: 12px;
+    }
+
+    .sub-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ctrl-btn {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #f1f5f9;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .ctrl-btn:hover {
+      background: #7c3aed;
+      border-color: #a855f7;
+    }
+    .sync-val {
+      font-family: monospace;
+      font-weight: 700;
+      font-size: 12px;
+      color: #c084fc;
+      min-width: 44px;
+      text-align: center;
+    }
+
+    /* Player Container */
+    .player-container {
+      width: 100%;
+      max-width: 1060px;
+      background: #000;
+      border-radius: 20px;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 40px rgba(147, 51, 234, 0.15);
+      overflow: hidden;
+      position: relative;
+    }
+    .video-aspect {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 ratio */
+      background: #000;
+    }
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      z-index: 1;
+    }
+
+    /* Subtitle Overlay Layer (Key HUD) */
+    .subtitle-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none; /* Allows mouse clicks to pass straight through to player controls */
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      padding-bottom: 7.5%; /* Position above player timeline */
+      overflow: hidden;
+    }
+
+    .subtitle-text {
+      color: #ffffff;
+      font-weight: 800;
+      font-size: clamp(20px, 3.4vw, 36px);
+      line-height: 1.35;
+      text-align: center;
+      max-width: 86%;
+      padding: 4px 16px;
+      border-radius: 10px;
+      /* Theater-Grade Outline & Shadow */
+      text-shadow:
+        -2px -2px 0 #000,
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+        -3px  0   0 #000,
+         3px  0   0 #000,
+         0   -3px 0 #000,
+         0    3px 0 #000,
+         0    4px 14px rgba(0, 0, 0, 0.95);
+      transition: opacity 0.1s ease-out;
+      display: none;
+    }
+
+    /* Size variants */
+    .size-small .subtitle-text { font-size: clamp(16px, 2.6vw, 26px); }
+    .size-normal .subtitle-text { font-size: clamp(20px, 3.4vw, 36px); }
+    .size-large .subtitle-text { font-size: clamp(24px, 4.2vw, 44px); }
+
+    /* Features Grid */
+    .features {
+      margin-top: 24px;
+      max-width: 1060px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .feature-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .feature-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(168, 85, 247, 0.2);
+      color: #c084fc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .feature-text h4 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 3px;
+    }
+    .feature-text p {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body class="size-normal">
+
+  <div class="header">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      블로그 자막 실시간 오버레이 검증
+    </div>
+    <h1>귀멸의 칼날 1기 1화 (ReAnime 1080p + 카이란 블로그 자막)</h1>
+    <p class="subtitle">
+      플레이어 내부를 개조하지 않고, <strong>외부 투명 레이어(HUD)</strong>에서 자막을 실시간 렌더링합니다.<br>
+      플레이어의 <code>postMessage</code>를 통해 영상 재생 시간과 0.1초 단위로 자동 동기화됩니다.
+    </p>
+  </div>
+
+  <!-- Subtitle HUD Controls -->
+  <div class="sub-toolbar">
+    <div class="sub-info">
+      <span class="blog-tag">카이란 블로그 자동 연동</span>
+      <span style="color: #cbd5e1;">대사 <strong>390개</strong> 전편 로드 완료</span>
+      <span class="time-monitor" id="time-display">00:00.0</span>
+    </div>
+
+    <div class="sub-controls">
+      <span style="font-size: 12px; color: #94a3b8;">싱크 조절:</span>
+      <button class="ctrl-btn" onclick="adjustSync(-0.5)">-0.5s</button>
+      <button class="ctrl-btn" onclick="adjustSync(-0.1)">-0.1s</button>
+      <span class="sync-val" id="sync-display">0.0s</span>
+      <button class="ctrl-btn" onclick="adjustSync(0.1)">+0.1s</button>
+      <button class="ctrl-btn" onclick="adjustSync(0.5)">+0.5s</button>
+      <button class="ctrl-btn" onclick="resetSync()">초기화</button>
+      <button class="ctrl-btn" id="toggle-sub-btn" onclick="toggleSubtitle()" style="background: rgba(168,85,247,0.3); border-color: #a855f7;">자막 ON</button>
+    </div>
+  </div>
+
+  <!-- Player Box with HUD Overlay -->
+  <div class="player-container" id="player-box">
+    <div class="video-aspect">
+      <!-- Layer 1: ReAnime Video Iframe -->
+      <iframe
+        id="video-player"
+        src="https://flixcloud.cc/e/78gm7otn2iv9?v=1"
+        allowfullscreen="true"
+        allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+        sandbox="allow-scripts allow-same-origin allow-fullscreen"
+      ></iframe>
+
+      <!-- Layer 2: Transparent Subtitle Overlay (pointer-events: none) -->
+      <div class="subtitle-overlay" id="sub-overlay">
+        <div class="subtitle-text" id="sub-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-text">
+        <h4>양방향 postMessage 동기화</h4>
+        <p>100ms마다 iframe에 현재 시간을 질의하여, 영상 탐색(Seek)이나 배속 변경에도 싱크가 실시간 유지됩니다.</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <div class="feature-text">
+        <h4>마우스 방해 0% (pointer-events)</h4>
+        <p>자막 레이어가 투명하게 통과되어 아래에 있는 비디오 정지/재생/볼륨 버튼을 아무 지장 없이 누를 수 있습니다.</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📺</div>
+      <div class="feature-text">
+        <h4>전체화면 자동 확장</h4>
+        <p>플레이어 전체화면 버튼 클릭 시 영상과 상단 자막 레이어가 함께 모니터 전체로 확대됩니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let subtitleCues = [];
+    let isSubEnabled = true;
+    let syncOffset = 0.0; // seconds
+    let currentVideoTime = 0.0;
+
+    const subTextEl = document.getElementById('sub-text');
+    const timeDisplayEl = document.getElementById('time-display');
+    const syncDisplayEl = document.getElementById('sync-display');
+    const iframe = document.getElementById('video-player');
+
+    // 1. Load pre-fetched Korean subtitle cues from 카이란 블로그
+    fetch('/kimetsu_01.json')
+      .then(res => res.json())
+      .then(data => {
+        subtitleCues = data;
+        console.log("✅ 390 Korean subtitle cues loaded successfully!");
+      })
+      .catch(err => {
+        console.error("Failed to load subtitles:", err);
+      });
+
+    // 2. High-frequency Time Inquiry via postMessage (100ms interval)
+    setInterval(() => {
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ command: "getTime" }, "*");
+      }
+    }, 100);
+
+    // 3. Listen for postMessage from FlixCloud iframe
+    window.addEventListener("message", (event) => {
+      if (!event.data) return;
+
+      // Handle Fullscreen toggle command from iframe
+      if (event.data.zenCommand === "toggleFullscreen") {
+        const playerBox = document.getElementById('player-box');
+        if (!document.fullscreenElement) {
+          playerBox.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+
+      // Handle Current Time response
+      if (typeof event.data.currentTime === "number") {
+        currentVideoTime = event.data.currentTime;
+        updateSubtitleHUD(currentVideoTime);
+      }
+    });
+
+    // 4. Subtitle HUD update function
+    function updateSubtitleHUD(rawTime) {
+      // Format time display (MM:SS.s)
+      const minutes = Math.floor(rawTime / 60);
+      const seconds = (rawTime % 60).toFixed(1);
+      timeDisplayEl.textContent = `${String(minutes).padStart(2, '0')}:${seconds.padStart(4, '0')}`;
+
+      if (!isSubEnabled || subtitleCues.length === 0) {
+        subTextEl.style.display = 'none';
+        return;
+      }
+
+      const adjustedTime = rawTime + syncOffset;
+
+      // Find cue matching current time
+      const cue = subtitleCues.find(c => adjustedTime >= c.start && adjustedTime <= c.end);
+
+      if (cue) {
+        subTextEl.innerHTML = cue.text;
+        subTextEl.style.display = 'block';
+      } else {
+        subTextEl.style.display = 'none';
+      }
+    }
+
+    // 5. Sync offset adjustments
+    function adjustSync(val) {
+      syncOffset = Math.round((syncOffset + val) * 10) / 10;
+      syncDisplayEl.textContent = (syncOffset > 0 ? `+${syncOffset.toFixed(1)}s` : `${syncOffset.toFixed(1)}s`);
+      updateSubtitleHUD(currentVideoTime);
+    }
+
+    function resetSync() {
+      syncOffset = 0.0;
+      syncDisplayEl.textContent = "0.0s";
+      updateSubtitleHUD(currentVideoTime);
+    }
+
+    function toggleSubtitle() {
+      isSubEnabled = !isSubEnabled;
+      const btn = document.getElementById('toggle-sub-btn');
+      if (isSubEnabled) {
+        btn.textContent = "자막 ON";
+        btn.style.background = "rgba(168,85,247,0.3)";
+        btn.style.borderColor = "#a855f7";
+      } else {
+        btn.textContent = "자막 OFF";
+        btn.style.background = "rgba(71,85,105,0.4)";
+        btn.style.borderColor = "rgba(255,255,255,0.15)";
+        subTextEl.style.display = 'none';
+      }
+    }
+  </script>
+
+</body>
+</html>

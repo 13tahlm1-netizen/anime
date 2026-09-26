@@ -1,0 +1,492 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0b0f19;
+  --foreground: #f1f5f9;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+/* iOS Safe Area Utility Classes */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.safe-x {
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+}
+
+/* WASM libass Canvas Overlay */
+.libassjs-canvas-parent {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  z-index: 20 !important;
+}
+
+.art-video-player canvas.libassjs-canvas,
+.libassjs-canvas {
+  display: block !important;
+  pointer-events: none !important;
+  z-index: 20 !important;
+}
+
+/* ArtPlayer custom wrapper */
+.artplayer-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000000;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(168, 85, 247, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+/* Artplayer Timeline Highlight Container & Ranges (OP/ED 스킵 구간 진행바 표시) */
+.art-video-player .art-bottom .art-progress .art-control-progress-inner .art-progress-highlight,
+.art-bottom .art-progress .art-control-progress-inner .art-progress-highlight {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  z-index: 25 !important;
+  display: block !important;
+}
+
+/* 개별 하이라이트 구간 바 공통 스타일 (높은 CSS 특이성) */
+.art-video-player .art-bottom .art-progress .art-control-progress-inner .art-progress-highlight span.art-highlight-range,
+.art-progress-highlight span.art-highlight-range {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  height: 100% !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  border-radius: 3px !important;
+  opacity: 0.9 !important;
+  transform: none !important;
+  display: block !important;
+  transition: opacity 0.2s ease, transform 0.15s ease, filter 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.art-video-player .art-bottom .art-progress .art-control-progress-inner .art-progress-highlight span.art-highlight-range:hover,
+.art-progress-highlight span.art-highlight-range:hover {
+  opacity: 1 !important;
+  filter: brightness(1.3) !important;
+  transform: scaleY(1.4) !important;
+  z-index: 30 !important;
+}
+
+/* 오프닝 (OP) 구간 스타일 - 시안 / 스카이블루 */
+.art-video-player .art-bottom .art-progress .art-control-progress-inner .art-progress-highlight span.art-highlight-op,
+.art-progress-highlight span.art-highlight-op {
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.95) 0%, rgba(14, 165, 233, 0.85) 100%) !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.8), inset 0 0 4px rgba(255, 255, 255, 0.4) !important;
+  border-left: 2px solid #7dd3fc !important;
+  border-right: 2px solid #7dd3fc !important;
+}
+
+/* 엔딩 (ED) 구간 스타일 - 핑크 / 로즈 */
+.art-video-player .art-bottom .art-progress .art-control-progress-inner .art-progress-highlight span.art-highlight-ed,
+.art-progress-highlight span.art-highlight-ed {
+  background: linear-gradient(180deg, rgba(244, 63, 94, 0.95) 0%, rgba(225, 29, 72, 0.85) 100%) !important;
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.8), inset 0 0 4px rgba(255, 255, 255, 0.4) !important;
+  border-left: 2px solid #fda4af !important;
+  border-right: 2px solid #fda4af !important;
+}
+
+/* 진행바 시간 / 스킵 툴팁 커스텀 디자인 */
+.art-bottom .art-progress .art-control-progress-inner .art-progress-tip {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  background: rgba(15, 23, 42, 0.92) !important;
+  border: 1px solid rgba(168, 85, 247, 0.45) !important;
+  color: #f8fafc !important;
+  border-radius: 6px !important;
+  padding: 3px 8px !important;
+  backdrop-filter: blur(8px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Subtitle font styling and sizing */
+:root {
+  --user-sub-size: 22px;
+  --user-sub-scale: 1;
+  --art-subtitle-bottom: 15px;
+}
+
+/* WebVTT 브라우저 내장 자막 (PIP 모드 & 일반 큐) */
+::cue,
+video::cue {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 0.8em !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  color: #ffffff !important;
+  text-shadow: 
+    1.5px 1.5px 0px #000000,
+    -1.5px -1.5px 0px #000000,
+    1.5px -1.5px 0px #000000,
+    -1.5px 1.5px 0px #000000,
+    0px 1.5px 0px #000000,
+    0px -1.5px 0px #000000,
+    1.5px 0px 0px #000000,
+    -1.5px 0px 0px #000000,
+    0 0 8px rgba(0, 0, 0, 0.95) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* 네이티브 Video PiP 모드가 아닐 때 (일반 웹 화면에서는 Artplayer/Octopus 자막이 나오므로 native cue는 투명화) */
+.art-video-player:not(.in-native-pip) video::cue {
+  color: transparent !important;
+  text-shadow: none !important;
+  background: transparent !important;
+}
+
+/* VTT 자막 영역은 art-subtitle-show 클래스가 붙어 있을 때만 표시 (ASS 적용/자막 끄기 시에는 숨김) */
+.art-video-player.art-subtitle-show .art-subtitle {
+  display: flex !important;
+}
+
+.art-video-player .art-subtitle {
+  --art-subtitle-font-size: var(--user-sub-size, 22px) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 네이티브 Video PiP 모드 중 메인 창의 중복 자막 숨김 (동일 특이도이므로 위 표시 규칙 뒤에 위치) */
+.art-video-player.in-native-pip .art-subtitle,
+.art-video-player.in-native-pip .libassjs-canvas-parent {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.art-video-player .art-subtitle p,
+.art-video-player .art-subtitle .art-subtitle-line,
+.art-video-player .art-subtitle p span,
+.art-video-player .art-subtitle div {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: var(--user-sub-size, 22px) !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  color: #ffffff;
+  text-shadow: 
+    2px 2px 0px #000000,
+    -2px -2px 0px #000000,
+    2px 2px 0px #000000,
+    -2px 2px 0px #000000,
+    0px 2px 0px #000000,
+    0px -2px 0px #000000,
+    2px 0px 0px #000000,
+    -2px 0px 0px #000000,
+    0 0 10px rgba(0, 0, 0, 0.95) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 모바일 기기 일반(비전체화면) 재생 시 작은 화면에 맞춰 자막 폰트 자동 비례 최적화 */
+@media (max-width: 768px) {
+  .art-video-player:not(.art-fullscreen):not(.art-fullscreen-web):not(.art-fullscreenWeb) .art-subtitle,
+  .art-video-player:not(.art-fullscreen):not(.art-fullscreen-web):not(.art-fullscreenWeb) .art-subtitle * {
+    font-size: clamp(14px, 4.2vw, var(--user-sub-size, 22px)) !important;
+    --art-subtitle-font-size: clamp(14px, 4.2vw, var(--user-sub-size, 22px)) !important;
+  }
+}
+
+.art-video-player.art-fullscreen .art-subtitle,
+.art-video-player.art-fullscreenWeb .art-subtitle,
+:fullscreen .art-subtitle {
+  --art-subtitle-font-size: calc(clamp(18px, min(4.2vw, 4.3vh), 64px) * var(--user-sub-scale, 1)) !important;
+}
+
+.art-video-player.art-fullscreen .art-subtitle p,
+.art-video-player.art-fullscreenWeb .art-subtitle p,
+:fullscreen .art-subtitle p {
+  font-size: calc(clamp(18px, min(4.2vw, 4.3vh), 64px) * var(--user-sub-scale, 1)) !important;
+}
+
+/* Player Settings Modal top-level priority & overlay */
+.player-settings-modal-root {
+  z-index: 99999999 !important;
+  pointer-events: auto !important;
+}
+
+.player-settings-modal-root .player-settings-backdrop {
+  z-index: 99999998 !important;
+  pointer-events: auto !important;
+}
+
+.player-settings-modal-root .player-settings-content {
+  z-index: 99999999 !important;
+  pointer-events: auto !important;
+}
+
+/* YouTube-style Double Tap Seek Overlay */
+.art-double-tap-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  z-index: 35 !important;
+  display: flex !important;
+  overflow: hidden !important;
+}
+
+.art-double-tap-ripple {
+  width: 46% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 0 !important;
+  transition: opacity 0.2s ease !important;
+  pointer-events: none !important;
+}
+
+.art-double-tap-left {
+  border-radius: 0 100% 100% 0 / 0 50% 50% 0 !important;
+  background: radial-gradient(circle at 0% 50%, rgba(168, 85, 247, 0.42) 0%, rgba(147, 51, 234, 0.18) 60%, transparent 100%) !important;
+}
+
+.art-double-tap-right {
+  margin-left: auto !important;
+  border-radius: 100% 0 0 100% / 50% 0 0 50% !important;
+  background: radial-gradient(circle at 100% 50%, rgba(168, 85, 247, 0.42) 0%, rgba(147, 51, 234, 0.18) 60%, transparent 100%) !important;
+}
+
+.art-double-tap-ripple.active {
+  opacity: 1 !important;
+  animation: doubleTapPulse 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+@keyframes doubleTapPulse {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.art-double-tap-content {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  color: #ffffff !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85) !important;
+}
+
+.art-double-tap-arrows {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.art-double-tap-left.active .art-double-tap-arrows svg {
+  animation: arrowLeftBounce 0.45s ease infinite alternate !important;
+}
+
+.art-double-tap-right.active .art-double-tap-arrows svg {
+  animation: arrowRightBounce 0.45s ease infinite alternate !important;
+}
+
+@keyframes arrowLeftBounce {
+  from { transform: translateX(0); opacity: 0.7; }
+  to { transform: translateX(-5px); opacity: 1; }
+}
+
+@keyframes arrowRightBounce {
+  from { transform: translateX(0); opacity: 0.7; }
+  to { transform: translateX(5px); opacity: 1; }
+}
+
+.art-double-tap-label {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  color: #ffffff !important;
+  padding: 3px 10px !important;
+  border-radius: 9999px !important;
+  border: 1px solid rgba(168, 85, 247, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Artplayer Fullscreen Safe Area (iPhone Notch & Home Indicator) */
+.art-video-player.art-fullscreen .art-bottom,
+.art-video-player.art-fullscreenWeb .art-bottom {
+  padding-left: max(16px, env(safe-area-inset-left, 0px)) !important;
+  padding-right: max(16px, env(safe-area-inset-right, 0px)) !important;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+}
+
+.art-video-player.art-fullscreen .art-top,
+.art-video-player.art-fullscreenWeb .art-top {
+  padding-left: max(16px, env(safe-area-inset-left, 0px)) !important;
+  padding-right: max(16px, env(safe-area-inset-right, 0px)) !important;
+  padding-top: max(12px, env(safe-area-inset-top, 0px)) !important;
+}
+
+/* ========================================================
+   모바일 상태바 활성화 시 중앙 컨트롤 (유튜브 모바일 스타일)
+   - 동그란 배경 없음, 반투명 화이트 아이콘 + 드롭 섀도우
+   ======================================================== */
+.art-mobile-center-controls {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 52px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: 36 !important;
+  transition: opacity 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+/* 데스크톱(마우스 환경)에서는 중앙 오버레이 컨트롤 완전 숨김 */
+@media (hover: hover) and (pointer: fine) {
+  .art-video-player:not(.art-mobile):not(.is-touch-device) .art-mobile-center-controls {
+    display: none !important;
+  }
+}
+
+/* 모바일 또는 터치 디바이스에서 상태바(art-hover)가 켜졌을 때만 중앙 컨트롤 노출 */
+.art-video-player.art-hover.art-mobile .art-mobile-center-controls,
+.art-video-player.art-hover.is-touch-device .art-mobile-center-controls {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+
+.art-video-player:not(.art-hover) .art-mobile-center-controls {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translate(-50%, -50%) scale(0.92) !important;
+}
+
+/* 중앙 공통 버튼: 동그란 배경 완전 제거, 반투명 + 부드러운 드롭 섀도우 */
+.art-mobile-center-btn {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.75)) !important;
+  transition: transform 0.12s ease, opacity 0.12s ease !important;
+  user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.art-mobile-center-btn:active {
+  transform: scale(0.88) !important;
+  opacity: 0.55 !important;
+}
+
+/* 앞뒤 탐색 버튼 (48x48, 세로 정렬 아이콘+초수) */
+.art-mobile-seek-backward,
+.art-mobile-seek-forward {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.art-mobile-seek-inner {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  gap: 1px !important;
+}
+
+.art-mobile-seek-inner svg {
+  color: rgba(255, 255, 255, 0.88) !important;
+  width: 26px !important;
+  height: 26px !important;
+}
+
+.art-mobile-seek-sec {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  letter-spacing: -0.02em !important;
+  pointer-events: none !important;
+}
+
+/* 재생 / 일시정지 중앙 버튼 (52x52, 깔끔한 반투명 아이콘) */
+.art-mobile-center-play {
+  width: 52px !important;
+  height: 52px !important;
+}
+
+.art-mobile-center-play svg {
+  color: rgba(255, 255, 255, 0.92) !important;
+  width: 38px !important;
+  height: 38px !important;
+}
+
+/* 모바일 및 터치 환경에서 기본 .art-state(중앙 정지 아이콘) 숨김 */
+.art-video-player.art-mobile .art-state,
+.art-video-player.is-touch-device .art-state {
+  display: none !important;
+}
+
